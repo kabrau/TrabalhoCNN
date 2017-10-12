@@ -2,7 +2,7 @@ import numpy as np
 from sys import stdout
 
 
-class NeuralNet(object):
+class NeuralNet3L(object):
   """
   Uma Rede Neural totalmente conectada de duas camadas. 
   
@@ -21,7 +21,7 @@ class NeuralNet(object):
   As saidas da segunda camada sao as predicoes para as classes. 
   """
 
-  def __init__(self, input_size, hidden_size, output_size, std=1e-4, dropout=0):
+  def __init__(self, input_size, hidden_size, hidden_size_2, output_size, std=1e-4, dropout=0):
     """
     
     Inicializacao do modelo. Os pesos iniciais sao pequenos valores aleatorios.  
@@ -42,8 +42,19 @@ class NeuralNet(object):
     self.params = {}
     self.params['W1'] = std * np.random.randn(input_size, hidden_size)
     self.params['b1'] = np.zeros(hidden_size)
-    self.params['W2'] = std * np.random.randn(hidden_size, output_size)
-    self.params['b2'] = np.zeros(output_size)
+    self.params['W2'] = std * np.random.randn(hidden_size, hidden_size_2)
+    self.params['b2'] = np.zeros(hidden_size_2)
+    self.params['W3'] = std * np.random.randn(hidden_size_2, output_size)
+    self.params['b3'] = np.zeros(output_size)
+
+    print "W1:",self.params['W1'].shape
+    print "b1:",self.params['b1'].shape
+    print "W2:",self.params['W2'].shape
+    print "b2:",self.params['b2'].shape
+    print "W3:",self.params['W3'].shape
+    print "b3:",self.params['b3'].shape
+
+
 
   def loss(self, X, y=None, reg=0.0):
     """
@@ -70,6 +81,7 @@ class NeuralNet(object):
     # Unpack variables from the params dictionary
     W1, b1 = self.params['W1'], self.params['b1']
     W2, b2 = self.params['W2'], self.params['b2']
+    W3, b3 = self.params['W3'], self.params['b3']
     N, D = X.shape
 
     # Calcula a etapa forward
@@ -78,9 +90,10 @@ class NeuralNet(object):
     # TODO: Implemente a etapa forward, calculando as predicoes das entradas.   #
     # Armazene o resultado na variavel scores cujo shape deve ser (N, C).       #
     #############################################################################
-    hidden_layer = np.maximum(0,np.dot(X, W1) + b1) # calcula hidden layer com ReLU
-    scores = np.dot(hidden_layer, W2) + b2          # saida
-    
+    hidden_layer = np.maximum(0,X.dot(W1) + b1)             # calcula hidden layer com ReLU
+    hidden_layer2 = np.maximum(0,hidden_layer.dot(W2) + b2) # calcula hidden layer 2 com ReLU
+    scores = hidden_layer2.dot(W3) + b3                     # saida
+
     #############################################################################
     #                              FIM DO SEU CODIGO                            #
     #############################################################################
@@ -97,13 +110,16 @@ class NeuralNet(object):
     #############################################################################
 
     # SOFTMAX
-    exp_scores = np.exp(scores) # para calcular apenas uma vez
-    softmax_score = exp_scores / np.sum(exp_scores, axis=1, keepdims=True) 
-    loss = -np.log(softmax_score[range(N), y])
-    loss = np.sum(loss)/N
+    probs = np.exp(scores - np.max(scores, axis=1, keepdims=True))
+    probs /= np.sum(probs, axis=1, keepdims=True)
+    N = scores.shape[0]
+    loss = -np.sum(np.log(probs[np.arange(N), y])) / N
+    dx = probs.copy()
+    dx[np.arange(N), y] -= 1
+    dx /= N
 
     # Regularizacao
-    loss += 0.5 * reg * (np.sum(W1**2) + np.sum(W2**2))
+    loss += 0.5 * reg * (np.sum(W1**2) + np.sum(W2**2) + np.sum(W3**2))
 
     #############################################################################
     #                              FIM DO SEU CODIGO                            #
@@ -117,24 +133,29 @@ class NeuralNet(object):
     # os gradientes relativos a W1, sendo uma matriz do mesmo tamanho de W1.    #
     #############################################################################
     
-    # derivada, se entendi bem
-    score_ajustado = softmax_score  # so para trocar o nome
-    score_ajustado[range(N),y] -= 1 # diminuir o valor do score de cada targets
-    score_ajustado /= N             # normaliza
-    
-    # pesos camada final, W2 e b2
-    grads['W2'] = np.dot(hidden_layer.T, score_ajustado)
-    grads['b2'] = np.sum(score_ajustado, axis=0)
+    # pesos camada final, W3 e b3
+    grads['W3'] = np.dot(hidden_layer2.T, dx)
+    grads['b3'] = np.sum(dx, axis=0)
 
     # Hidden Layer
-    hidden_ajustado = np.dot(score_ajustado, W2.T)
+    hidden_ajustado2 = np.dot(dx, W3.T)
+    hidden_ajustado2[hidden_layer2 <= 0] = 0 # ReLU do backpropragation
+
+    # pesos camada final, W2 e b2
+    grads['W2'] = np.dot(hidden_layer.T, hidden_ajustado2)
+    grads['b2'] = np.sum(hidden_ajustado2, axis=0)
+
+    # Hidden Layer
+    hidden_ajustado = np.dot(hidden_ajustado2, W2.T)
     hidden_ajustado[hidden_layer <= 0] = 0 # ReLU do backpropragation
-    
+
     # pesos da Hidden Layer
     grads['W1'] = np.dot(X.T, hidden_ajustado)
     grads['b1'] = np.sum(hidden_ajustado, axis=0)
 
+
     # Regularizacao
+    grads['W3'] += reg * W3
     grads['W2'] += reg * W2
     grads['W1'] += reg * W1
 
@@ -219,27 +240,14 @@ class NeuralNet(object):
         # parametros da rede (armazenados no dicionario self.params)            #
         # usando gradiente descendente estocastico. 
         #########################################################################
-        
-        optimizer = "AdaGrad"
-        #optimizer = "SGD"
 
-        # acho que aqui eh soh isso mesmo   
-        if (optimizer == "AdaGrad"):  
-          optCacheW1 += grads['W1'] ** 2
-          optCacheW2 += grads['W2'] ** 2
-          optCacheb1 += grads['b1'] ** 2
-          optCacheb2 += grads['b2'] ** 2
-
-          self.params['W1'] += -learning_rate * grads['W1'] / (np.sqrt(optCacheW1) + 1e-7)
-          self.params['W2'] += -learning_rate * grads['W2'] / (np.sqrt(optCacheW2) + 1e-7)
-          self.params['b1'] += -learning_rate * grads['b1'] / (np.sqrt(optCacheb1) + 1e-7)
-          self.params['b2'] += -learning_rate * grads['b2'] / (np.sqrt(optCacheb2) + 1e-7)
-
-        else: #SGD
-          self.params['W1'] += -learning_rate*grads['W1']
-          self.params['W2'] += -learning_rate*grads['W2']
-          self.params['b1'] += -learning_rate*grads['b1']
-          self.params['b2'] += -learning_rate*grads['b2']
+        # acho que aqui eh soh isso mesmo     
+        self.params['W1'] += -learning_rate*grads['W1']
+        self.params['W2'] += -learning_rate*grads['W2']
+        self.params['W3'] += -learning_rate*grads['W3']
+        self.params['b1'] += -learning_rate*grads['b1']
+        self.params['b2'] += -learning_rate*grads['b2']
+        self.params['b3'] += -learning_rate*grads['b3']
 
         #########################################################################
         #                             FIM DO SEU CODIGO                         #
@@ -274,8 +282,7 @@ class NeuralNet(object):
 
           print 'Epoch %d -> loss %f acc %f val_loss %f val_acc %f %s' % (epoca, loss, train_acc, val_loss, val_acc, best)
 
-          #=============================================================================
-          # Ajusta atualização dos pesos do MarceloSGD - Decai apenas se nao mudar o loss e acc da validação
+          # decai apenas se nao mudar o loss e acc
           if (best == ''):
             # Decay learning rate
             learning_rate *= learning_rate_decay
@@ -285,6 +292,8 @@ class NeuralNet(object):
             self.params['Bestb1'] = self.params['b1'].copy()
             self.params['BestW2'] = self.params['W2'].copy()
             self.params['Bestb2'] = self.params['b2'].copy()
+            self.params['BestW3'] = self.params['W3'].copy()
+            self.params['Bestb3'] = self.params['b3'].copy() 
 
 
           # Marcelo - earlyStopping
@@ -299,10 +308,14 @@ class NeuralNet(object):
     self.params['b1'] = self.params['Bestb1'].copy()
     self.params['W2'] = self.params['BestW2'].copy()
     self.params['b2'] = self.params['Bestb2'].copy()
+    self.params['W3'] = self.params['BestW3'].copy()
+    self.params['b3'] = self.params['Bestb3'].copy()
     self.params['BestW1'] = []
     self.params['Bestb1'] = []
     self.params['BestW2'] = []
     self.params['Bestb2'] = []
+    self.params['BestW3'] = []
+    self.params['Bestb3'] = [] 
 
     return {
       'loss_history': loss_history,
@@ -369,8 +382,10 @@ class NeuralNet(object):
       # acho que aqui eh soh isso mesmo     
       self.params['W1'] += -learning_rate*grads['W1']
       self.params['W2'] += -learning_rate*grads['W2']
+      self.params['W3'] += -learning_rate*grads['W3']
       self.params['b1'] += -learning_rate*grads['b1']
       self.params['b2'] += -learning_rate*grads['b2']
+      self.params['b3'] += -learning_rate*grads['b3']
 
       #########################################################################
       #                             FIM DO SEU CODIGO                         #
@@ -415,16 +430,10 @@ class NeuralNet(object):
     ###########################################################################
     # TODO: Implemente esta funcao. Provavelmente ela sera bastante simples   #
     ###########################################################################
-
-    # Aqui eh isso, mas eu reduzi a funcao ....
-
-    #layer_hidden = X.dot(self.params['W1']) + self.params['b1']
-    #layer_relu = np.maximum(0, layer_hidden) # relu
-    #scores = layer_relu.dot(self.params['W2']) + self.params['b2']
-    #y_pred = np.argmax(scores, axis=1)
-
-    # Funcao reduzida
-    y_pred = np.argmax(np.maximum(X.dot(self.params['W1']) + self.params['b1'], 0).dot(self.params['W2'])+self.params['b2'], axis=1)
+    hidden_layer = np.maximum(0,X.dot(self.params['W1']) + self.params['b1'])             # calcula hidden layer com ReLU
+    hidden_layer2 = np.maximum(0,hidden_layer.dot(self.params['W2']) + self.params['b2']) # calcula hidden layer 2 com ReLU
+    scores = hidden_layer2.dot(self.params['W3']) + self.params['b3']                     # saida
+    y_pred = np.argmax(scores, axis=1)
 
     ###########################################################################
     #                              FIM DO SEU CODIGO                          #
@@ -451,16 +460,10 @@ class NeuralNet(object):
       ###########################################################################
       # TODO: Implemente esta funcao. Provavelmente ela sera bastante simples   #
       ###########################################################################
-
-      # Aqui eh isso, mas eu reduzi a funcao ....
-
-      #layer_hidden = X.dot(self.params['W1']) + self.params['b1']
-      #layer_relu = np.maximum(0, layer_hidden) # relu
-      #scores = layer_relu.dot(self.params['W2']) + self.params['b2']
-      #y_pred = np.argmax(scores, axis=1)
-
-      # Funcao reduzida
-      y_pred = np.argmax(np.maximum(X.dot(self.params['BestW1']) + self.params['Bestb1'], 0).dot(self.params['BestW2'])+self.params['Bestb2'], axis=1)
+      hidden_layer = np.maximum(0,X.dot(self.params['BestW1']) + self.params['Bestb1'])             # calcula hidden layer com ReLU
+      hidden_layer2 = np.maximum(0,hidden_layer.dot(self.params['BestW2']) + self.params['Bestb2']) # calcula hidden layer 2 com ReLU
+      scores = hidden_layer2.dot(self.params['BestW3']) + self.params['Bestb3']                     # saida
+      y_pred = np.argmax(scores, axis=1)
 
       ###########################################################################
       #                              FIM DO SEU CODIGO                          #

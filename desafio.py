@@ -90,9 +90,11 @@ hidden_size = 50
 learning_rate=1e-3
 learning_rate_decay=0.95
 reg = 0.5
+optimizer = "SGD"
 
 model_name = ""
 prefixo = ""
+sufixo = ""
 
 # primeira rodada
 # hidden_range = [50,100,200,400,800,1600,3200,4000]
@@ -106,7 +108,7 @@ prefixo = ""
 #regRange = np.random.uniform(0.4, 0.6, 5)
 #learnRange = np.random.uniform(1e-3,1e-5, 5)
 #model_name = "model_0.570300_800_0.500000_0.003000_95.pickle"
-#prefixo = "R2-"
+#sufixo = "R2"
 
 # terceira rodada
 # vou tentar carregar o treinamento de: model_0.575500_3200_0.750000_0.002000_135.pickle
@@ -115,7 +117,7 @@ hidden_range = [3200]
 regRange = np.random.uniform(0.5, 0.75, 5)
 learnRange = np.random.uniform(1e-3,1e-4, 5)
 model_name = "model_0.575500_3200_0.750000_0.002000_135.pickle"
-prefixo = "R3-"
+sufixo = "R3"
 
 # quarta rodada
 # vou tentar carregar o treinamento de: R3-model_0.580100_3200_0.678687_0.000673_66.pickle
@@ -124,7 +126,7 @@ hidden_range = [3200]
 regRange = np.random.uniform(0.6, 0.8, 5)
 learnRange = np.random.uniform(8e-4,1e-5, 5)
 model_name = "R3-model_0.580100_3200_0.678687_0.000673_66.pickle"
-prefixo = "R4-"
+sufixo = "R4"
 
 # quinta rodada
 # vou tentar carregar o treinamento de: model_0.580800_3200_0.768194_0.000031_21-R4.pickle
@@ -133,7 +135,30 @@ hidden_range = [3200]
 regRange = np.random.uniform(0.65, 0.85, 5)
 learnRange = np.random.uniform(8e-4,1e-6, 5)
 model_name = "model_0.580800_3200_0.768194_0.000031_21-R4.pickle"
-prefixo = "R5-"
+sufixo = "R5"
+
+
+# sexta rodada, mudando otimizador
+# vou tentar carregar o treinamento de: model_0.580800_3200_0.768194_0.000031_21-R4.pickle
+# e fazer o seguinte range:
+hidden_range = [3200]
+regRange = np.random.uniform(0.65, 0.85, 5)
+learnRange = np.random.uniform(8e-4,1e-6, 5)
+model_name = "model_0.580800_3200_0.768194_0.000031_21-R4.pickle"
+sufixo = "R6-AdaGrad"
+optimizer = "AdaGrad"
+learning_rate_decay=0.95
+
+# setima rodada, mudando otimizador para ADAM
+# vou tentar carregar o treinamento de: model_0.581500_3200_0.689206_0.000664_75-R6-AdaGrad.pickle
+# e fazer o seguinte range:
+hidden_range = [3200]
+regRange = np.random.uniform(0.5, 0.9, 5)
+learnRange = np.random.uniform(1e-3,1e-6, 5)
+model_name = "model_0.581500_3200_0.689206_0.000664_75-R6-AdaGrad.pickle"
+sufixo = "R7-Adam"
+optimizer = "Adam"
+learning_rate_decay=0.95
 
 if (model_name):
     model = load_model(model_name)
@@ -166,7 +191,7 @@ for hidden_size in hidden_range:
             print 'Neuronios: %d , acuracia de validacao: %f, epoca %d' % (hidden_size, val_acc, net.params['Epoch'])
 
             # Salva o modelo da rede treinada
-            model_path = '%smodel_%f_%d_%f_%f_%d.pickle' % (prefixo,val_acc, hidden_size, reg, learning_rate, net.params['Epoch'])
+            model_path = '%smodel_%f_%d_%f_%f_%d-%s.pickle' % (prefixo,val_acc, hidden_size, reg, learning_rate, net.params['Epoch'],sufixo)
             save_model(model_path, net.params)
             beep()
 

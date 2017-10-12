@@ -151,7 +151,8 @@ class NeuralNet(object):
             learning_rate_decay=0.95,
             reg=1e-5, 
             verbose=False, 
-            earlyStopping=0):
+            earlyStopping=0, 
+            optimizer="SGD"):
     """
     Treine uma rede neural usando SGD (Stochastic Gradient Descent)
 
@@ -180,8 +181,25 @@ class NeuralNet(object):
 
     # Marcelo - earlyStopping
     best_loss = 99999999
+    best_loss_train = 99999999
     best_acc = 0
     epocas_para_best_loss = 0
+
+    # ADAM
+    AdamM = {}
+    AdamM['W1'] = 0
+    AdamM['W2'] = 0
+    AdamM['b1'] = 0
+    AdamM['b2'] = 0
+
+    AdamV = {}
+    AdamV['W1'] = 0
+    AdamV['W2'] = 0
+    AdamV['b1'] = 0
+    AdamV['b2'] = 0
+
+    AdamBeta1 = 0.98
+    AdamBeta2 = 0.98
 
     for epoca in xrange(epochs):
 
@@ -220,10 +238,6 @@ class NeuralNet(object):
         # usando gradiente descendente estocastico. 
         #########################################################################
         
-        optimizer = "AdaGrad"
-        #optimizer = "SGD"
-
-        # acho que aqui eh soh isso mesmo   
         if (optimizer == "AdaGrad"):  
           optCacheW1 += grads['W1'] ** 2
           optCacheW2 += grads['W2'] ** 2
@@ -234,6 +248,16 @@ class NeuralNet(object):
           self.params['W2'] += -learning_rate * grads['W2'] / (np.sqrt(optCacheW2) + 1e-7)
           self.params['b1'] += -learning_rate * grads['b1'] / (np.sqrt(optCacheb1) + 1e-7)
           self.params['b2'] += -learning_rate * grads['b2'] / (np.sqrt(optCacheb2) + 1e-7)
+
+        elif (optimizer == "Adam"): 
+
+          for peso in ["W1","W2","b1","b2"]:
+            AdamM[peso] = AdamBeta1 * AdamM[peso] + (1 + AdamBeta1) * grads[peso]
+            AdamV[peso] = AdamBeta2 * AdamV[peso] + (1 + AdamBeta1) * (grads[peso] ** 2.0)
+            mb = AdamM[peso] / ( 1 - AdamBeta1 ** epoca)
+            vb = AdamV[peso] / ( 1 - AdamBeta2 ** epoca)
+            self.params[peso] += -learning_rate * mb / (np.sqrt(vb) + 1e-7)
+
 
         else: #SGD
           self.params['W1'] += -learning_rate*grads['W1']
@@ -263,22 +287,28 @@ class NeuralNet(object):
           epocas_para_best_loss += 1
           best = ''
           if val_loss < best_loss:
-            best += ' bestLoss'
+            best += ' LossVal'
             best_loss = val_loss  
             epocas_para_best_loss = 0
 
+          if loss < best_loss_train:
+            best += ' LossTrain'
+            best_loss_train = loss  
+            epocas_para_best_loss = 0
+
           if val_acc > best_acc:
-            best += ' bestAcc'
+            best += ' AccValid'
             best_acc = val_acc
             epocas_para_best_loss = 0
 
           print 'Epoch %d -> loss %f acc %f val_loss %f val_acc %f %s' % (epoca, loss, train_acc, val_loss, val_acc, best)
 
           #=============================================================================
-          # Ajusta atualização dos pesos do MarceloSGD - Decai apenas se nao mudar o loss e acc da validação
+          # Ajusta atualizacao dos pesos do MarceloSGD - Decai apenas se nao mudar o loss e acc da validacao
           if (best == ''):
             # Decay learning rate
-            learning_rate *= learning_rate_decay
+            if (optimizer == "SGD"):  
+              learning_rate *= learning_rate_decay
           else:
             self.params['Epoch'] = epoca
             self.params['BestW1'] = self.params['W1'].copy()

@@ -91,6 +91,7 @@ learning_rate=1e-3
 learning_rate_decay=0.95
 reg = 0.5
 optimizer = "SGD"
+dropout = 0
 
 model_name = ""
 prefixo = ""
@@ -138,27 +139,38 @@ model_name = "model_0.580800_3200_0.768194_0.000031_21-R4.pickle"
 sufixo = "R5"
 
 
-# sexta rodada, mudando otimizador
+# sexta rodada
 # vou tentar carregar o treinamento de: model_0.580800_3200_0.768194_0.000031_21-R4.pickle
 # e fazer o seguinte range:
 hidden_range = [3200]
 regRange = np.random.uniform(0.65, 0.85, 5)
 learnRange = np.random.uniform(8e-4,1e-6, 5)
 model_name = "model_0.580800_3200_0.768194_0.000031_21-R4.pickle"
-sufixo = "R6-AdaGrad"
-optimizer = "AdaGrad"
+sufixo = "R6"
 learning_rate_decay=0.95
 
-# setima rodada, mudando otimizador para ADAM
-# vou tentar carregar o treinamento de: model_0.581500_3200_0.689206_0.000664_75-R6-AdaGrad.pickle
+# setima rodada, mudando otimizador para AdaGrad 
+# vou tentar carregar o treinamento de: model_0.581500_3200_0.689206_0.000664_75-R6.pickle
 # e fazer o seguinte range:
 hidden_range = [3200]
 regRange = np.random.uniform(0.5, 0.9, 5)
 learnRange = np.random.uniform(1e-3,1e-6, 5)
-model_name = "model_0.581500_3200_0.689206_0.000664_75-R6-AdaGrad.pickle"
-sufixo = "R7-Adam"
-optimizer = "Adam"
+model_name = "model_0.581500_3200_0.689206_0.000664_75-R6.pickle"
+sufixo = "R7-AdaGrad"
+optimizer = "AdaGrad"
+learning_rate_decay=1
+
+# oitava rodada, mudando otimizador para AdaGrad com Dropout
+# vou tentar carregar o treinamento de: model_0.582000_3200_0.654387_0.000032_25-R7-AdaGrad.pickle
+# e fazer o seguinte range:
+hidden_range = [3200]
+regRange = np.random.uniform(0.5, 0.9, 5)
+learnRange = np.random.uniform(1e-3,1e-6, 5)
+model_name = "model_0.582000_3200_0.654387_0.000032_25-R7-AdaGrad.pickle"
+sufixo = "R8-AdaGrad-drop"
+optimizer = "AdaGrad"
 learning_rate_decay=0.95
+dropout = 0.5
 
 if (model_name):
     model = load_model(model_name)
@@ -184,7 +196,9 @@ for hidden_size in hidden_range:
                                     learning_rate_decay=learning_rate_decay,
                                     reg=reg, 
                                     verbose=True, 
-                                    earlyStopping=earlyStopping)
+                                    earlyStopping=earlyStopping,
+                                    optimizer=optimizer,
+                                    dropout=dropout)
 
             # Efetua predicao no conjunto de validacao
             val_acc = (net.predict(X_valid) == y_valid).mean()

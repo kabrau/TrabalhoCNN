@@ -21,7 +21,7 @@ class NeuralNet(object):
   As saidas da segunda camada sao as predicoes para as classes. 
   """
 
-  def __init__(self, input_size, hidden_size, output_size, std=1e-4, dropout=0):
+  def __init__(self, input_size, hidden_size, output_size, std=1e-4, dropout=0.0):
     """
     
     Inicializacao do modelo. Os pesos iniciais sao pequenos valores aleatorios.  
@@ -45,7 +45,7 @@ class NeuralNet(object):
     self.params['W2'] = std * np.random.randn(hidden_size, output_size)
     self.params['b2'] = np.zeros(output_size)
 
-  def loss(self, X, y=None, reg=0.0):
+  def loss(self, X, y=None, reg=0.0, dropout=0.0):
     """
     Calcula a funcao de custo e os gradientes.
 
@@ -79,6 +79,12 @@ class NeuralNet(object):
     # Armazene o resultado na variavel scores cujo shape deve ser (N, C).       #
     #############################################################################
     hidden_layer = np.maximum(0,np.dot(X, W1) + b1) # calcula hidden layer com ReLU
+    
+    if dropout>0:
+      D1 = (np.random.random_sample(hidden_layer.shape) < dropout) / dropout
+      hidden_layer *= D1
+
+
     scores = np.dot(hidden_layer, W2) + b2          # saida
     
     #############################################################################
@@ -152,7 +158,8 @@ class NeuralNet(object):
             reg=1e-5, 
             verbose=False, 
             earlyStopping=0, 
-            optimizer="SGD"):
+            optimizer="SGD", 
+            dropout=0.0):
     """
     Treine uma rede neural usando SGD (Stochastic Gradient Descent)
 
@@ -185,21 +192,23 @@ class NeuralNet(object):
     best_acc = 0
     epocas_para_best_loss = 0
 
-    # ADAM
+    pesos = ["W1","W2","b1","b2"]
+
+    # AdaGrad
+    AdaGradCache = {}
+
+    # Adam
     AdamM = {}
-    AdamM['W1'] = 0
-    AdamM['W2'] = 0
-    AdamM['b1'] = 0
-    AdamM['b2'] = 0
-
     AdamV = {}
-    AdamV['W1'] = 0
-    AdamV['W2'] = 0
-    AdamV['b1'] = 0
-    AdamV['b2'] = 0
-
     AdamBeta1 = 0.98
     AdamBeta2 = 0.98
+    
+    for peso in pesos:
+      AdaGradCache[peso] = 0
+      AdamM[peso] = 0
+      AdamV[peso] = 0
+
+
 
     for epoca in xrange(epochs):
 
@@ -229,7 +238,7 @@ class NeuralNet(object):
         #########################################################################
 
         # Calcule a funcao de custo e os gradientes usando o minibatch atual
-        loss, grads = self.loss(X_batch, y=y_batch, reg=reg)
+        loss, grads = self.loss(X_batch, y=y_batch, reg=reg, dropout=dropout)
         loss_history.append(loss)
 
         #########################################################################
@@ -238,20 +247,15 @@ class NeuralNet(object):
         # usando gradiente descendente estocastico. 
         #########################################################################
         
-        if (optimizer == "AdaGrad"):  
-          optCacheW1 += grads['W1'] ** 2
-          optCacheW2 += grads['W2'] ** 2
-          optCacheb1 += grads['b1'] ** 2
-          optCacheb2 += grads['b2'] ** 2
+        if (optimizer == "AdaGrad"):
 
-          self.params['W1'] += -learning_rate * grads['W1'] / (np.sqrt(optCacheW1) + 1e-7)
-          self.params['W2'] += -learning_rate * grads['W2'] / (np.sqrt(optCacheW2) + 1e-7)
-          self.params['b1'] += -learning_rate * grads['b1'] / (np.sqrt(optCacheb1) + 1e-7)
-          self.params['b2'] += -learning_rate * grads['b2'] / (np.sqrt(optCacheb2) + 1e-7)
+          for peso in pesos: 
+            AdaGradCache[peso] += grads[peso] ** 2
+            self.params[peso] += -learning_rate * grads[peso] / (np.sqrt(AdaGradCache[peso]) + 1e-7)
 
         elif (optimizer == "Adam"): 
 
-          for peso in ["W1","W2","b1","b2"]:
+          for peso in pesos:
             AdamM[peso] = AdamBeta1 * AdamM[peso] + (1 + AdamBeta1) * grads[peso]
             AdamV[peso] = AdamBeta2 * AdamV[peso] + (1 + AdamBeta1) * (grads[peso] ** 2.0)
             mb = AdamM[peso] / ( 1 - AdamBeta1 ** epoca)
@@ -260,16 +264,15 @@ class NeuralNet(object):
 
 
         else: #SGD
-          self.params['W1'] += -learning_rate*grads['W1']
-          self.params['W2'] += -learning_rate*grads['W2']
-          self.params['b1'] += -learning_rate*grads['b1']
-          self.params['b2'] += -learning_rate*grads['b2']
+
+          for peso in pesos:
+            self.params[peso] += -learning_rate*grads[peso]
 
         #########################################################################
         #                             FIM DO SEU CODIGO                         #
         #########################################################################
 
-        stdout.write('Epoch %d -> %d/%d (%d%%) loss %f \r' % (epoca, qtd_it, num_train, qtd_it*100/num_train, loss))
+        stdout.write('Epoch %d -> %d/%d (%d%%) loss %f %s\r' % (epoca, qtd_it, num_train, qtd_it*100/num_train, loss, optimizer))
         stdout.flush()
 
         # Every epoch, check train and val accuracy and decay learning rate.
@@ -297,7 +300,7 @@ class NeuralNet(object):
             epocas_para_best_loss = 0
 
           if val_acc > best_acc:
-            best += ' AccValid'
+            best += ' AccVal'
             best_acc = val_acc
             epocas_para_best_loss = 0
 
@@ -307,7 +310,7 @@ class NeuralNet(object):
           # Ajusta atualizacao dos pesos do MarceloSGD - Decai apenas se nao mudar o loss e acc da validacao
           if (best == ''):
             # Decay learning rate
-            if (optimizer == "SGD"):  
+            #if (optimizer == "SGD"):  
               learning_rate *= learning_rate_decay
           else:
             self.params['Epoch'] = epoca

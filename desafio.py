@@ -82,7 +82,7 @@ def get_CIFAR10_data():
 X_train, y_train, X_valid, y_valid = get_CIFAR10_data()
 input_size = 32 * 32 * 3
 num_classes = 10
-earlyStopping = 10
+earlyStopping = 15
 
 epochs = 200
 batch_size = 200
@@ -160,17 +160,53 @@ sufixo = "R7-AdaGrad"
 optimizer = "AdaGrad"
 learning_rate_decay=1
 
-# oitava rodada, mudando otimizador para AdaGrad com Dropout
+# oitava rodada, mudando otimizador para AdaGrad 
 # vou tentar carregar o treinamento de: model_0.582000_3200_0.654387_0.000032_25-R7-AdaGrad.pickle
 # e fazer o seguinte range:
 hidden_range = [3200]
 regRange = np.random.uniform(0.5, 0.9, 5)
 learnRange = np.random.uniform(1e-3,1e-6, 5)
 model_name = "model_0.582000_3200_0.654387_0.000032_25-R7-AdaGrad.pickle"
-sufixo = "R8-AdaGrad-drop"
+sufixo = "R8-AdaGrad"
 optimizer = "AdaGrad"
 learning_rate_decay=0.95
-dropout = 0.5
+#dropout = 0.5
+
+# nona rodada, mudando otimizador para AdaGrad com Dropout
+# vou tentar carregar o treinamento de: model_0.582000_3200_0.654387_0.000032_25-R7-AdaGrad.pickle
+# e fazer o seguinte range:
+hidden_range = [3200]
+regRange = np.random.uniform(0.5, 0.9, 5)
+learnRange = np.random.uniform(1e-3,1e-6, 5)
+model_name = "model_0.582000_3200_0.654387_0.000032_25-R7-AdaGrad.pickle"
+sufixo = "R9-AdaGrad-drop"
+optimizer = "AdaGrad"
+learning_rate_decay=0.95
+dropout = 0.75
+
+# decima rodada, mudando otimizador para SGD com Dropout
+# vou tentar carregar o treinamento de: model_0.582000_3200_0.654387_0.000032_25-R7-AdaGrad.pickle
+# e fazer o seguinte range:
+hidden_range = [3200]
+regRange = np.random.uniform(0.1, 1, 5)
+learnRange = np.random.uniform(1e-3,1e-6, 5)
+model_name = "model_0.582000_3200_0.654387_0.000032_25-R7-AdaGrad.pickle"
+sufixo = "R10-SGD-drop"
+optimizer = "SGD"
+learning_rate_decay=0.95
+dropout = 0.90
+
+# decima primeira rodada, mudando otimizador para AdaGrad com Dropout 0.9
+# vou tentar carregar o treinamento de: model_0.582000_3200_0.654387_0.000032_25-R7-AdaGrad.pickle
+# e fazer o seguinte range:
+hidden_range = [3200]
+regRange = np.random.uniform(0.1, 1, 5)
+learnRange = np.random.uniform(1e-3,1e-6, 5)
+model_name = "model_0.582000_3200_0.654387_0.000032_25-R7-AdaGrad.pickle"
+sufixo = "R11-AdaGrad-drop"
+optimizer = "AdaGrad"
+learning_rate_decay=0.95
+dropout = 0.90
 
 if (model_name):
     model = load_model(model_name)

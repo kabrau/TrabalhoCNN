@@ -207,6 +207,117 @@ sufixo = "R11-AdaGrad-drop"
 optimizer = "AdaGrad"
 learning_rate_decay=0.95
 dropout = 0.90
+batch_size = 400
+
+# decima segunda  rodada
+# e fazer o seguinte range:
+hidden_range = [1800]
+regRange = np.random.uniform(0.1, 1, 5)
+learnRange = np.random.uniform(1e-3,1e-6, 5)
+model_name = ""
+sufixo = "R12-AdaGrad-drop"
+optimizer = "AdaGrad"
+learning_rate_decay=0.95
+dropout = 0.90
+batch_size = 800
+
+# decima Quarta  rodada
+# e fazer o seguinte range:
+hidden_range = [4000]
+regRange = np.random.uniform(0.4, 0.6, 5)
+learnRange = np.random.uniform(1e-3,1e-4, 5)
+model_name = "model_0.575100_4000_0.500000_0.002000_99.pickle"
+sufixo = "R14-AdaGrad-drop"
+optimizer = "AdaGrad"
+learning_rate_decay=0.95
+dropout = 0.95
+batch_size = 400
+epochs = 2000
+earlyStopping = 15
+
+# decima Quinta  rodada
+# e fazer o seguinte range:
+hidden_range = [4600]
+regRange = np.random.uniform(0.4, 0.6, 5)
+learnRange = np.random.uniform(1e-3,1e-4, 5)
+model_name = ""
+sufixo = "R15-AdaGrad-drop"
+optimizer = "AdaGrad"
+learning_rate_decay=0.95
+dropout = 0.95
+batch_size = 200
+epochs = 2000
+earlyStopping = 15
+
+# decima sexta rodada
+# e fazer o seguinte range:
+hidden_range = [4600]
+regRange = np.random.uniform(0.4, 0.6, 5)
+learnRange = np.random.uniform(1e-3,1e-4, 5)
+model_name = "model_0.554000_4600_0.468658_0.000142_76-R15-AdaGrad-drop.pickle"
+sufixo = "R16-SGD-drop"
+optimizer = "SGD"
+learning_rate_decay=0.95
+dropout = 0.90
+batch_size = 200
+epochs = 2000
+earlyStopping = 15
+
+# decima setima rodada
+# e fazer o seguinte range:
+hidden_range = [4600]
+regRange = np.random.uniform(0.4, 0.6, 5)
+learnRange = np.random.uniform(1e-3,1e-4, 5)
+model_name = "model_0.576600_4600_0.536924_0.000407_105-R16-SGD-drop.pickle"
+sufixo = "R17-AdaGrad-drop"
+optimizer = "AdaGrad"
+learning_rate_decay=0.95
+dropout = 0.90
+batch_size = 400
+epochs = 2000
+earlyStopping = 15
+
+# decima OITAVA rodada
+# e fazer o seguinte range:
+hidden_range = [4600]
+regRange = np.random.uniform(0.4, 0.6, 5)
+learnRange = np.random.uniform(1e-4,1e-6, 5)
+model_name = "model_0.578700_4600_0.470356_0.000108_75-R17-AdaGrad-drop.pickle"
+sufixo = "R18-AdaGrad-drop"
+optimizer = "AdaGrad"
+learning_rate_decay=0.95
+dropout = 0.90
+batch_size = 400
+epochs = 2000
+earlyStopping = 15
+
+# decima NONA rodada
+# e fazer o seguinte range:
+hidden_range = [3200]
+regRange = np.random.uniform(0.4, 0.6, 5)
+learnRange = np.random.uniform(1e-4,1e-6, 5)
+model_name = "model_0.582000_3200_0.654387_0.000032_25-R7-AdaGrad.pickle"
+sufixo = "R19-AdaGrad-drop"
+optimizer = "AdaGrad"
+learning_rate_decay=0.95
+dropout = 0.90
+batch_size = 400
+epochs = 2000
+earlyStopping = 15
+
+# Vigesima rodada
+# e fazer o seguinte range:
+hidden_range = [3200]
+regRange = np.random.uniform(0.4, 0.6, 5)
+learnRange = np.random.uniform(1e-6,1e-7, 5)
+model_name = "model_0.582000_3200_0.654387_0.000032_25-R7-AdaGrad.pickle"
+sufixo = "R19-AdaGrad-drop"
+optimizer = "SGD"
+learning_rate_decay=0.95
+dropout = 0.90
+batch_size = 400
+epochs = 2000
+earlyStopping = 15
 
 if (model_name):
     model = load_model(model_name)

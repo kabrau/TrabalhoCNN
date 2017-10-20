@@ -1,3 +1,6 @@
+# RODRIGO / JÔNATAS - Todo o treinamento do meu modelo final passou por aqui
+# foram 23 rodadas, fora algumas não computadas.
+
 import numpy as np
 import matplotlib.pyplot as plt
 from rncvc.classifiers.neural_net import NeuralNet
@@ -186,7 +189,6 @@ dropout = 0.75
 
 # decima rodada, mudando otimizador para SGD com Dropout
 # vou tentar carregar o treinamento de: model_0.582000_3200_0.654387_0.000032_25-R7-AdaGrad.pickle
-# e fazer o seguinte range:
 hidden_range = [3200]
 regRange = np.random.uniform(0.1, 1, 5)
 learnRange = np.random.uniform(1e-3,1e-6, 5)
@@ -198,7 +200,6 @@ dropout = 0.90
 
 # decima primeira rodada, mudando otimizador para AdaGrad com Dropout 0.9
 # vou tentar carregar o treinamento de: model_0.582000_3200_0.654387_0.000032_25-R7-AdaGrad.pickle
-# e fazer o seguinte range:
 hidden_range = [3200]
 regRange = np.random.uniform(0.1, 1, 5)
 learnRange = np.random.uniform(1e-3,1e-6, 5)
@@ -210,7 +211,6 @@ dropout = 0.90
 batch_size = 400
 
 # decima segunda  rodada
-# e fazer o seguinte range:
 hidden_range = [1800]
 regRange = np.random.uniform(0.1, 1, 5)
 learnRange = np.random.uniform(1e-3,1e-6, 5)
@@ -222,7 +222,6 @@ dropout = 0.90
 batch_size = 800
 
 # decima Quarta  rodada
-# e fazer o seguinte range:
 hidden_range = [4000]
 regRange = np.random.uniform(0.4, 0.6, 5)
 learnRange = np.random.uniform(1e-3,1e-4, 5)
@@ -236,7 +235,6 @@ epochs = 2000
 earlyStopping = 15
 
 # decima Quinta  rodada
-# e fazer o seguinte range:
 hidden_range = [4600]
 regRange = np.random.uniform(0.4, 0.6, 5)
 learnRange = np.random.uniform(1e-3,1e-4, 5)
@@ -250,7 +248,6 @@ epochs = 2000
 earlyStopping = 15
 
 # decima sexta rodada
-# e fazer o seguinte range:
 hidden_range = [4600]
 regRange = np.random.uniform(0.4, 0.6, 5)
 learnRange = np.random.uniform(1e-3,1e-4, 5)
@@ -264,7 +261,6 @@ epochs = 2000
 earlyStopping = 15
 
 # decima setima rodada
-# e fazer o seguinte range:
 hidden_range = [4600]
 regRange = np.random.uniform(0.4, 0.6, 5)
 learnRange = np.random.uniform(1e-3,1e-4, 5)
@@ -278,7 +274,6 @@ epochs = 2000
 earlyStopping = 15
 
 # decima OITAVA rodada
-# e fazer o seguinte range:
 hidden_range = [4600]
 regRange = np.random.uniform(0.4, 0.6, 5)
 learnRange = np.random.uniform(1e-4,1e-6, 5)
@@ -292,7 +287,6 @@ epochs = 2000
 earlyStopping = 15
 
 # decima NONA rodada
-# e fazer o seguinte range:
 hidden_range = [3200]
 regRange = np.random.uniform(0.4, 0.6, 5)
 learnRange = np.random.uniform(1e-4,1e-6, 5)
@@ -306,7 +300,6 @@ epochs = 2000
 earlyStopping = 15
 
 # Vigesima rodada
-# e fazer o seguinte range:
 hidden_range = [3200]
 regRange = np.random.uniform(0.4, 0.6, 5)
 learnRange = np.random.uniform(1e-6,1e-7, 5)
@@ -318,6 +311,46 @@ dropout = 0.90
 batch_size = 400
 epochs = 2000
 earlyStopping = 15
+
+# Vigesima primeira rodada
+hidden_range = [3200]
+regRange = np.random.uniform(0.4, 0.6, 5)
+learnRange = np.random.uniform(1e-6,1e-8, 5)
+model_name = "model_0.582000_3200_0.654387_0.000032_25-R7-AdaGrad.pickle"
+sufixo = "R20-AdaGrad-drop"
+optimizer = "AdaGrad"
+learning_rate_decay=0.95
+dropout = 0.90
+batch_size = 400
+epochs = 2000
+earlyStopping = 15
+
+# Vigesima segunda rodada
+hidden_range = [3200]
+regRange = np.random.uniform(0.4, 0.6, 5)
+learnRange = np.random.uniform(1e-6,1e-8, 5)
+model_name = "model_0.582100_3200_0.532663_0.000001_7-R20-AdaGrad-drop.pickle"
+sufixo = "R22-AdaGrad-drop"
+optimizer = "AdaGrad"
+learning_rate_decay=0.95
+dropout = 0.90
+batch_size = 500
+epochs = 2000
+earlyStopping = 15
+
+# Vigesima terceira rodada
+hidden_range = [3200]
+regRange = np.random.uniform(0.4, 0.6, 5)
+learnRange = np.random.uniform(1e-6,1e-8, 5)
+model_name = "model_0.582100_3200_0.532663_0.000001_7-R20-AdaGrad-drop.pickle"
+sufixo = "R23-SGD-drop"
+optimizer = "SGD"
+learning_rate_decay=0.95
+dropout = 0.50
+batch_size = 500
+epochs = 2000
+earlyStopping = 15
+
 
 if (model_name):
     model = load_model(model_name)

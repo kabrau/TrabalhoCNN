@@ -172,9 +172,12 @@ class NeuralNet(object):
     - learning_rate: taxa de aprendizado (escalar). 
     - learning_rate_decay: reducao da taxa de aprendizado por epoca. 
     - reg: parametro para controlar a forca da regularizacao.
-    - epochs: numero de epocas.
     - batch_size: numero de instancias em cada batch.
     - verbose: boolean; se verdadeiro imprime informacoes durante treinamento.
+    - epochs: numero de epocas.
+    - earlyStopping: parar se nao melhor em X epocas
+    - optimizer: otimizador SGD, AdaGrad, Adam
+    - dropout: deixei ao contrario, por exemplo, 0.9 significa que 10% serao apagados.
     """
     num_train = X.shape[0]  
     batchs_per_epoch = max(num_train / batch_size, 1)

@@ -1,3 +1,9 @@
+# ==================================================================
+#
+# Rodrigo/Jonatas, nao vale para o trabalho, e apenas um TESTE.
+#
+# ==================================================================
+
 import numpy as np
 from sys import stdout
 
